@@ -7,6 +7,7 @@ import { lines } from "../eval/io.ts";
 export type Strategy = "tf" | "tfidf" | "bm25";
 export interface Posting { doc: number; tf: number }
 export interface TermEvidence { term: string; query_tf: number; tf: number; df: number; idf: number; length_norm: number; contribution: number }
+export interface CorpusStatistics { indexedDocuments: number; tokens: number; df: ReadonlyMap<string, number> }
 
 export class InvertedIndex {
   readonly documents: Document[] = [];
@@ -40,7 +41,7 @@ export class InvertedIndex {
     }
   }
 
-  search(query: string, options: { k?: number; strategy?: Strategy; parameters?: Parameters; exclude?: string } = {}) {
+  search(query: string, options: { k?: number; strategy?: Strategy; parameters?: Parameters; exclude?: string; statistics?: CorpusStatistics } = {}) {
     const started = performance.now();
     const strategy = options.strategy ?? "bm25";
     if (!["tf", "tfidf", "bm25"].includes(strategy)) throw new Error("Unsupported strategy");
@@ -49,9 +50,13 @@ export class InvertedIndex {
     const tokenizeMs = performance.now() - started;
     const queryTF = new Map<string, number>();
     for (const token of tokens) queryTF.set(token, (queryTF.get(token) ?? 0) + 1);
+    // Offline batches use full-corpus statistics, never batch-local BM25 weights.
+    const n = options.statistics?.indexedDocuments ?? this.indexedDocuments;
+    const avgdl = options.statistics ? options.statistics.tokens / n : this.avgdl;
     const terms = [...queryTF].map(([term, count]) => {
       const list = this.postings.get(term) ?? [];
-      return { term, count, list, cursor: 0, idf: list.length ? idf(this.indexedDocuments, list.length) : 0 };
+      const df = options.statistics?.df.get(term) ?? list.length;
+      return { term, count, list, cursor: 0, idf: df ? idf(n, df) : 0 };
     });
     const heap = new TopK(options.k ?? 10);
     let visited = 0, scored = 0;
@@ -61,7 +66,7 @@ export class InvertedIndex {
       let doc = Infinity;
       for (const term of terms) doc = Math.min(doc, term.list[term.cursor]?.doc ?? Infinity);
       if (doc === Infinity) break;
-      const norm = lengthNorm(this.lengths[doc]!, this.avgdl, parameters, this.analyzer === "anserini");
+      const norm = lengthNorm(this.lengths[doc]!, avgdl, parameters, this.analyzer === "anserini");
       let score = 0;
       for (const term of terms) {
         const posting = term.list[term.cursor];

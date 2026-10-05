@@ -92,9 +92,20 @@ async function main() {
   }
   if (config.dataset === "product") {
     await download("https://archive.org/download/stackexchange/cs.stackexchange.com.7z", join(root, "cs.stackexchange.com.7z"), "f7cb3c523ae1a4ed1c341faeb2e6d3c9", "md5");
+    await download("https://api.stackexchange.com/2.3/questions?order=desc&sort=votes&site=stackoverflow&pagesize=100&filter=withbody", join(root, "stackoverflow-questions.json"));
     return;
   }
-  throw new Error("--dataset must be reference, cqadupstack, msmarco, or product");
+  if (config.dataset === "models") {
+    const models = config.out ?? "data/models";
+    const bge = "https://huggingface.co/BAAI/bge-small-en-v1.5/resolve/5c38ec7c405ec4b44b94cc5a9bb96e735b38267a";
+    const minilm = "https://huggingface.co/cross-encoder/ms-marco-MiniLM-L6-v2/resolve/233902d25c440f23af6f7d6e94d2946bac0bee0a";
+    await download(`${bge}/onnx/model.onnx`, join(models, "bge-small-en-v1.5", "model.onnx"), "828e1496d7fabb79cfa4dcd84fa38625c0d3d21da474a00f08db0f559940cf35");
+    await download(`${bge}/vocab.txt`, join(models, "bge-small-en-v1.5", "vocab.txt"));
+    await download(`${minilm}/onnx/model_quint8_avx2.onnx`, join(models, "ms-marco-MiniLM-L6-v2", "model.onnx"), "c80a8b34256ea453093d612e3ac48d3d965a0c0a48c7906709af8b8e28461bf9");
+    await download(`${minilm}/vocab.txt`, join(models, "ms-marco-MiniLM-L6-v2", "vocab.txt"));
+    return;
+  }
+  throw new Error("--dataset must be reference, cqadupstack, msmarco, product, or models");
 }
 
 if (import.meta.main) await main();

@@ -8,14 +8,19 @@ function int4(value: number): number {
 }
 const free = 255 - int4(0x7fffffff);
 
-export function luceneLength(length: number): number {
+export function lengthByte(length: number): number {
   if (!Number.isInteger(length) || length < 0 || length > 0x7fffffff) throw new Error("Invalid field length");
-  if (length < free) return length;
-  const encoded = int4(length - free);
-  const shift = (encoded >>> 3) - 1;
-  const decoded = shift === -1 ? encoded & 7 : ((encoded & 7) | 8) * 2 ** shift;
-  return free + decoded;
+  return length < free ? length : free + int4(length - free);
 }
+
+export function byteLength(byte: number): number {
+  if (byte < free) return byte;
+  const encoded = byte - free;
+  const shift = (encoded >>> 3) - 1;
+  return free + (shift === -1 ? encoded & 7 : ((encoded & 7) | 8) * 2 ** shift);
+}
+
+export function luceneLength(length: number): number { return byteLength(lengthByte(length)); }
 
 export interface Parameters { k1: number; b: number }
 export const defaults: Parameters = { k1: 0.9, b: 0.4 };
@@ -38,6 +43,12 @@ export function lengthNorm(length: number, avgdl: number, parameters: Parameters
 /** Lucene omits the query-independent (k1 + 1) factor. Scores use that convention. */
 export function contribution(tf: number, weight: number, norm: number, parity: boolean): number {
   if (!parity) return weight * tf / (tf + norm);
+  return fromSaturation(saturation(tf, norm), weight);
+}
+
+export function saturation(tf: number, norm: number): number { return Math.fround(tf * Math.fround(1 / norm)); }
+
+export function fromSaturation(x: number, weight: number): number {
   const f = Math.fround;
-  return f(weight - f(weight / f(1 + f(tf * f(1 / norm)))));
+  return f(weight - f(weight / f(1 + x)));
 }

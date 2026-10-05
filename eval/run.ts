@@ -41,7 +41,7 @@ function analyzerOption(value: string | undefined): AnalyzerMode {
   return analyzer;
 }
 
-async function loadQueries(path: string): Promise<Query[]> {
+export async function loadQueries(path: string): Promise<Query[]> {
   const result: Query[] = [];
   const seen = new Set<string>();
   let lineNumber = 0;
@@ -85,7 +85,7 @@ function percentile(values: number[], fraction: number): number {
   return sorted[lower]! + (sorted[upper]! - sorted[lower]!) * (position - lower);
 }
 
-function stats(values: number[]) {
+export function stats(values: number[]) {
   if (!values.length) return { count: 0, min: 0, max: 0, mean: 0, p50: 0, p95: 0, p99: 0 };
   return {
     count: values.length,
@@ -111,7 +111,7 @@ function expectedMetrics(value: unknown): Record<string, unknown> {
   return aggregate && typeof aggregate === "object" && !Array.isArray(aggregate) ? aggregate as Record<string, unknown> : record;
 }
 
-function compareReference(
+export function compareReference(
   actual: MetricValues,
   reference: unknown,
   tolerance: number,
@@ -148,7 +148,7 @@ function compareReference(
   }
   const scoring = root.scoring && typeof root.scoring === "object" && !Array.isArray(root.scoring) ? root.scoring as Record<string, unknown> : {};
   const parameters = scoring.parameters && typeof scoring.parameters === "object" && !Array.isArray(scoring.parameters) ? scoring.parameters as Record<string, unknown> : {};
-  const declaredConfig = (name: "k1" | "b"): unknown => root[name] ?? scoring[name] ?? parameters[name];
+  const declaredConfig = (name: "k1" | "b"): unknown => name in root ? root[name] : name in scoring ? scoring[name] : parameters[name];
   for (const [name, actualValue] of Object.entries({ k1: expectedActual.k1, b: expectedActual.b }) as ["k1" | "b", number][]) {
     const value = declaredConfig(name);
     if (value === undefined) continue;
@@ -167,7 +167,7 @@ function compareReference(
   const countsMatch = Object.values(counts).every((value) => value.match);
   const configMatch = Object.values(config).every((value) => value.match);
   return {
-    passed: metricsMatch && countsMatch && configMatch,
+    passed: metricsMatch && countsMatch && configMatch && failures.length === 0,
     metrics_match: metricsMatch,
     counts_match: countsMatch,
     config_match: configMatch,

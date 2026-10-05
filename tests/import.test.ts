@@ -6,6 +6,7 @@ import { tmpdir } from "node:os";
 import { describe, expect, test } from "bun:test";
 
 import { importCorpus } from "../eval/import.ts";
+import { apiPostsXML } from "../eval/product.ts";
 
 async function inTempDir(run: (directory: string) => Promise<void>): Promise<void> {
   const directory = await mkdtemp(join(tmpdir(), "trace-import-"));
@@ -21,6 +22,22 @@ function fileHash(value: string): string {
 }
 
 describe("Phase 0 importers", () => {
+  test("imports the public API snapshot through the dump parser with attribution and entity decoding", async () => {
+    await inTempDir(async directory => {
+      const input = join(directory, "api.xml"), out = join(directory, "api.jsonl");
+      await writeFile(input, apiPostsXML({ items: [{ question_id: 42, creation_date: 1609459200,
+        title: "A &amp; B", body: "<p>Use <code>x &lt; y</code></p>\n<pre>line one\n\tline two</pre>", content_license: "CC BY-SA 4.0",
+        owner: { user_id: 5, display_name: "A &amp; Author" } }] }));
+      await importCorpus({ format: "stackexchange", input, out, source: "stackoverflow" });
+      const doc = JSON.parse(await readFile(out, "utf8"));
+      expect(doc.doc_id).toBe("stackoverflow:42");
+      expect(doc.title).toBe("A & B");
+      expect(doc.body).toContain("Use x < y");
+      expect(doc.body).toContain("line one\n\tline two");
+      expect(doc.attribution).toEqual({ author: "A & Author", author_uri: "https://stackoverflow.com/users/5", license: "CC BY-SA 4.0" });
+      expect(() => apiPostsXML({ items: [{ question_id: 42 }] })).toThrow();
+    });
+  });
   test("streams MS MARCO TSV, preserves numeric IDs as strings, and records hashes", async () => {
     await inTempDir(async (directory) => {
       const input = join(directory, "collection.tsv");

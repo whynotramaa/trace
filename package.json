@@ -4,20 +4,34 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "start": "bun server/index.ts",
+    "dev": "bun --hot server/index.ts",
+    "build": "NODE_ENV=production bun build server/index.ts --compile --minify --outfile=dist/trace",
     "test": "bun test",
     "check": "tsc --noEmit",
     "import": "bun eval/import.ts",
     "evaluate": "bun eval/evaluate.ts",
     "fetch": "bun eval/fetch.ts",
     "verify:metrics": "bun eval/verify.ts",
-    "eval:run": "bun eval/run.ts"
+    "eval:run": "bun eval/run.ts",
+    "index": "bun engine/build.ts",
+    "bench:phase3": "./bench/phase3.sh && ./bench/serve.sh && bun bench/phase3-report.ts",
+    "eval:neural": "./eval/neural.sh"
   },
   "devDependencies": {
     "@types/bun": "1.3.14",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
     "typescript": "5.9.3"
   },
   "dependencies": {
+    "@orama/orama": "3.1.18",
     "hyparquet": "1.31.2",
-    "hyparquet-compressors": "1.1.2"
+    "hyparquet-compressors": "1.1.2",
+    "minisearch": "7.2.0",
+    "onnxruntime-node": "1.30.0",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "usearch": "2.26.3"
   }
 }

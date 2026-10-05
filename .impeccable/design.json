@@ -1,0 +1,88 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-05T14:21:52.917179+00:00",
+  "title": "Design System: Trace",
+  "extensions": {
+    "shadows": [],
+    "motion": [
+      {
+        "name": "control-feedback",
+        "value": "color 120ms, background-color 120ms",
+        "purpose": "Hover feedback when reduced motion is not requested."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "compact-desktop",
+        "value": "1100px"
+      },
+      {
+        "name": "single-column",
+        "value": "1000px"
+      },
+      {
+        "name": "mobile",
+        "value": "600px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Search button",
+      "kind": "button",
+      "description": "The submit control inside the combined search field.",
+      "html": "<button class=\"ds-primary\">Search</button>",
+      "css": ".ds-primary{font:600 15px -apple-system,BlinkMacSystemFont,\"Segoe UI\",sans-serif;background:var(--accent,#1d6454);color:#fff;border:0;border-radius:4px;padding:13px 22px;min-height:44px;cursor:pointer}.ds-primary:hover:not(:disabled){background:#154b3f}.ds-primary:focus-visible{outline:2px solid var(--accent,#1d6454);outline-offset:4px}.ds-primary:disabled{cursor:default;opacity:.55}@media(prefers-reduced-motion:no-preference){.ds-primary{transition:color 120ms,background-color 120ms}}",
+      "refersTo": "button-primary"
+    },
+    {
+      "name": "Inspect button",
+      "kind": "button",
+      "description": "The results action that opens the engine evidence panel.",
+      "html": "<button class=\"ds-inspect\">Inspect ranking</button>",
+      "css": ".ds-inspect{font:600 13px -apple-system,BlinkMacSystemFont,\"Segoe UI\",sans-serif;padding:9px 14px;border:1px solid #9bafa3;border-radius:4px;background:transparent;color:var(--accent,#1d6454);min-height:40px;cursor:pointer}.ds-inspect:hover,.ds-inspect[aria-expanded=true]{background:var(--wash,#e7efea)}.ds-inspect:focus-visible{outline:2px solid var(--accent,#1d6454);outline-offset:4px}@media(prefers-reduced-motion:no-preference){.ds-inspect{transition:color 120ms,background-color 120ms}}"
+    },
+    {
+      "name": "Search input",
+      "kind": "input",
+      "description": "One bordered search form containing an SVG icon, hidden label, query field, and submit action.",
+      "html": "<form class=\"ds-search\" role=\"search\"><label class=\"ds-hidden\" for=\"ds-query\">Search technical sources</label><svg class=\"ds-search-icon\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" aria-hidden=\"true\"><circle cx=\"10.5\" cy=\"10.5\" r=\"6.5\"/><path d=\"m16 16 4.5 4.5\"/></svg><input id=\"ds-query\" name=\"q\" placeholder=\"Ask a technical question\" type=\"search\" autocomplete=\"off\" maxlength=\"512\"><button class=\"ds-search-submit\" type=\"submit\">Search</button></form>",
+      "css": ".ds-search{display:flex;align-items:center;gap:14px;background:#fff;border:1px solid #a6b6ac;border-radius:7px;padding:8px 8px 8px 20px;font-family:-apple-system,BlinkMacSystemFont,\"Segoe UI\",sans-serif}.ds-search:focus-within{border-color:var(--accent,#1d6454);outline:1px solid var(--accent,#1d6454)}.ds-search-icon{width:22px;height:22px;flex-shrink:0;color:var(--muted,#58665e)}.ds-search input{width:100%;min-width:0;border:0;background:transparent;color:var(--ink,#202b26);font:18px -apple-system,BlinkMacSystemFont,\"Segoe UI\",sans-serif;height:44px;outline:none;caret-color:var(--accent,#1d6454)}.ds-search input::placeholder{color:var(--muted,#58665e);opacity:1}.ds-search-submit{border:0;border-radius:4px;background:var(--accent,#1d6454);color:#fff;padding:13px 22px;font:600 15px -apple-system,BlinkMacSystemFont,\"Segoe UI\",sans-serif;min-height:44px;cursor:pointer}.ds-search-submit:hover:not(:disabled){background:#154b3f}.ds-search-submit:focus-visible{outline:2px solid var(--accent,#1d6454);outline-offset:4px}.ds-search-submit:disabled{cursor:default;opacity:.55}.ds-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}@media(prefers-reduced-motion:no-preference){.ds-search-submit{transition:color 120ms,background-color 120ms}}"
+    },
+    {
+      "name": "Analyzed term",
+      "kind": "chip",
+      "description": "An analyzer term displayed in the query evidence section.",
+      "html": "<code class=\"ds-token\">binari</code>",
+      "css": ".ds-token{font:12px monospace;color:var(--ink,#202b26);background:var(--wash,#e7efea);padding:4px 7px;border-radius:3px;overflow-wrap:anywhere}",
+      "refersTo": "query-token"
+    },
+    {
+      "name": "Source result",
+      "kind": "custom",
+      "description": "A source result in the continuous list, with title, excerpt, attribution, and Inspect action.",
+      "html": "<article class=\"ds-result\"><div class=\"ds-source\"><span>Computer Science</span><span>Question</span><span class=\"ds-rank\">#1</span></div><h2><a href=\"#\">Time complexity of searching a binary search tree</a></h2><p class=\"ds-excerpt\">A source excerpt follows the title.</p><div class=\"ds-result-footer\"><span><a href=\"#\">Original author</a> \u00b7 CC BY-SA 4.0 \u00b7 Oct 2026</span><button class=\"ds-text-button\">Inspect result</button></div></article>",
+      "css": ".ds-result{font-family:-apple-system,BlinkMacSystemFont,\"Segoe UI\",sans-serif;color:var(--ink,#202b26);border-bottom:1px solid var(--line,#d5ddd7);padding:28px 0}.ds-source{display:flex;align-items:center;gap:14px;font-size:12px;line-height:1.5;color:var(--muted,#58665e)}.ds-source span:first-child{font-weight:650;color:var(--ink,#202b26)}.ds-rank{margin-left:auto;font-variant-numeric:tabular-nums}.ds-result h2{font-size:21px;font-weight:600;line-height:1.35;margin:8px 0 9px;letter-spacing:-.015em;overflow-wrap:anywhere}.ds-result h2 a{color:var(--accent,#1d6454);text-decoration:none;text-underline-offset:.22em}.ds-result h2 a:hover{text-decoration:underline}.ds-result a:focus-visible{outline:2px solid var(--accent,#1d6454);outline-offset:4px}.ds-excerpt{font-size:15px;line-height:1.65;margin:0;max-width:72ch;overflow-wrap:anywhere}.ds-result-footer{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px 16px;margin-top:12px;align-items:baseline;font-size:11px;color:var(--muted,#58665e)}.ds-result-footer>span{line-height:1.8}.ds-result-footer a{color:inherit;text-decoration-color:#a8b8ae;text-underline-offset:.22em}.ds-text-button{border:0;padding:6px 0;background:none;color:var(--accent,#1d6454);font:12px -apple-system,BlinkMacSystemFont,\"Segoe UI\",sans-serif;cursor:pointer;text-underline-offset:4px}.ds-text-button:hover{text-decoration:underline}.ds-text-button:focus-visible{outline:2px solid var(--accent,#1d6454);outline-offset:4px}@media(prefers-reduced-motion:no-preference){.ds-result a,.ds-text-button{transition:color 120ms,background-color 120ms}}"
+    }
+  ],
+  "narrative": {
+    "overview": "Trace puts source titles and readable excerpts beside optional ranking evidence. The interface uses neutral backgrounds, muted teal actions, thin separators, and native form controls. Search and Inspect share the same typography and spacing.\n\nThese rules describe the implemented Phase 2 interface in `web/style.css` and `web/app.tsx`. Product facts belong in `PRODUCT.md`; the search composition belongs in `.impeccable/surfaces/search.md`.",
+    "keyCharacteristics": [
+      "Readable source results",
+      "Optional engine evidence",
+      "Neutral backgrounds and muted teal actions"
+    ],
+    "rules": [],
+    "dos": [
+      "Do keep source titles and excerpts readable before exposing engine details.",
+      "Do preserve source links and attribution.",
+      "Do use monospace for analyzed query terms and term evidence. Use tabular numerals for other measurements.",
+      "Do obtain scores, counters, and timing values from the server trace."
+    ],
+    "donts": [
+      "Don't reconstruct ranking values in the interface.",
+      "Don't turn request timings into benchmark claims.",
+      "Don't add later-phase controls before their engine behavior exists."
+    ]
+  }
+}

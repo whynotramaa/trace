@@ -93,7 +93,7 @@ function compareDocumentsDescending(a: string, b: string): number {
   return a === b ? 0 : a < b ? 1 : -1;
 }
 
-function ranked(run: Map<string, number> | undefined): [string, number][] {
+export function ranked(run: Map<string, number> | undefined): [string, number][] {
   return [...(run ?? [])].sort((a, b) => b[1] - a[1] || compareDocumentsDescending(a[0], b[0]));
 }
 

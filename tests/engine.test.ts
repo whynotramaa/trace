@@ -4,6 +4,11 @@ import { InvertedIndex } from "../engine/index.ts";
 import { TopK, compareHits } from "../engine/heap.ts";
 import { contribution, idf, lengthNorm, luceneLength, defaults } from "../engine/bm25.ts";
 import type { Document } from "../engine/document.ts";
+import { batchedSearch } from "../eval/batched.ts";
+import { mkdtemp, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { compareReference } from "../eval/run.ts";
 
 function document(id: string, body: string): Document {
   return { doc_id: id, title: "", body, uri: "", source: "golden", content_type: "test", published_at: null, checksum: createHash("sha256").update(body).digest("hex") };
@@ -82,4 +87,42 @@ test("index rejects duplicate source identities and invalid scoring input", () =
   expect(() => index.add(document("a", "beta"))).toThrow("Duplicate");
   expect(() => index.search("alpha", { k: 0 })).toThrow();
   expect(() => index.search("alpha", { parameters: { k1: NaN, b: 0.4 } })).toThrow();
+});
+
+test("offline batches preserve full-corpus BM25 scores, ties, and exhaustive counters", async () => {
+  const directory = await mkdtemp(join(tmpdir(), "trace-batches-"));
+  try {
+    const documents = ["alpha beta", "alpha alpha", "beta gamma", "", "gamma delta", "alpha beta", "alpha"]
+      .map((body, i) => document(String(i), body));
+    const path = join(directory, "corpus.jsonl");
+    await Bun.write(path, documents.map(doc => JSON.stringify(doc)).join("\n") + "\n");
+    for (const analyzer of ["anserini", "technical"] as const) {
+      const full = new InvertedIndex(analyzer);
+      documents.forEach(doc => full.add(doc));
+      const queries = ["alpha", "alpha alpha beta", "beta gamma", "missing", ""].map((text, i) => ({ id: String(i), text }));
+      const batched = await batchedSearch(path, queries, { batchSize: 2, analyzer, parameters: defaults, k: 3, excludeSelf: true });
+      queries.forEach((query, i) => {
+        const expected = full.search(query.text, { k: 3, exclude: query.id });
+        expect(batched.heaps[i]!.sorted().map(({ doc_id, score }) => ({ doc_id, score })))
+          .toEqual(expected.hits.map(({ doc_id, score }) => ({ doc_id, score })));
+        expect(batched.candidates[i]).toBe(expected.candidate_count);
+        expect(batched.postings[i]).toBe(expected.postings_visited);
+      });
+      expect(batched.count).toBe(documents.length);
+      expect(batched.statistics.indexedDocuments).toBe(full.indexedDocuments);
+    }
+    await Bun.write(path, `${JSON.stringify(documents[0])}\n${JSON.stringify(documents[0])}\n`);
+    await expect(batchedSearch(path, [], { batchSize: 1, analyzer: "anserini", parameters: defaults, k: 3 })).rejects.toThrow("Duplicate");
+  } finally { await rm(directory, { recursive: true, force: true }); }
+});
+
+test("reference gate rejects malformed declarations instead of treating them as absent", () => {
+  const metrics = { mrr_10: 0.2, ndcg_cut_10: 0, recall_100: 0, recall_1000: 0 };
+  const actual = { dataset: "msmarco", document_count: 7, query_count: 3, k1: 0.82, b: 0.68 };
+  for (const reference of [
+    { aggregate: { mrr_10: 0.2 }, document_count: "7" },
+    { aggregate: { mrr_10: 0.2 }, query_count: -1 },
+    { aggregate: { mrr_10: 0.2 }, k1: "0.82" },
+    { aggregate: { mrr_10: 0.2 }, k1: null, scoring: { k1: 0.82 } },
+  ]) expect(compareReference(metrics, reference, 0.001, actual).passed).toBe(false);
 });
