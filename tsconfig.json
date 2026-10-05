@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "Preserve",
+    "moduleResolution": "Bundler",
+    "strict": true,
+    "noEmit": true,
+    "types": ["bun"],
+    "lib": ["ESNext", "DOM"],
+    "noUncheckedIndexedAccess": true,
+    "allowImportingTsExtensions": true
+  },
+  "include": ["engine/**/*.ts", "eval/**/*.ts", "server/**/*.ts", "bench/**/*.ts", "tests/**/*.ts"]
+}
